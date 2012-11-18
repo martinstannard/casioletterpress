@@ -20,7 +20,9 @@ class LetterPressCalculator
 
   _initLetterHandlers: ->
     @lettersEl.find(".button").click (e) =>
-      @_appendScreenText $(e.currentTarget).data("letter")
+      unless $(e.currentTarget).hasClass("on")
+        @_appendScreenText $(e.currentTarget).data("letter")
+        $(e.currentTarget).addClass("on")
 
   _initCommandHandlers: ->
     @commandsEl.find('.send').click =>

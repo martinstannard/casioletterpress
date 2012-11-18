@@ -31,7 +31,10 @@
     LetterPressCalculator.prototype._initLetterHandlers = function() {
       var _this = this;
       return this.lettersEl.find(".button").click(function(e) {
-        return _this._appendScreenText($(e.currentTarget).data("letter"));
+        if (!$(e.currentTarget).hasClass("on")) {
+          _this._appendScreenText($(e.currentTarget).data("letter"));
+          return $(e.currentTarget).addClass("on");
+        }
       });
     };
 
