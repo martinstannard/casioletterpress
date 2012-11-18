@@ -1,5 +1,5 @@
 (function() {
-  var Bag, TheBag, app, express, http, io, path, routes, server, status, user, _;
+  var Bag, Scoreboard, TheBag, app, express, http, io, path, routes, server, status, user, _;
 
   express = require('express');
 
@@ -45,6 +45,28 @@
 
   status = "All is well.";
 
+  Scoreboard = (function() {
+
+    function Scoreboard() {
+      this.scores = {};
+    }
+
+    Scoreboard.prototype.addScore = function(clientId, score) {
+      if (this.scores[clientId] != null) {
+        return this.scores[clientId] += score;
+      } else {
+        return this.scores[clientId] = score;
+      }
+    };
+
+    Scoreboard.prototype.table = function() {
+      return this.scores;
+    };
+
+    return Scoreboard;
+
+  })();
+
   Bag = (function() {
 
     function Bag() {
@@ -62,14 +84,19 @@
 
     Bag.prototype.validWords = function() {};
 
-    Bag.prototype.wordIsInBag = function(word) {
-      var index, l, _i, _len;
+    Bag.prototype.wordIsInBag = function(data) {
+      var index, l, _i, _len, _ref;
       this.comp = this.letters;
-      for (_i = 0, _len = word.length; _i < _len; _i++) {
-        l = word[_i];
-        index = _.indexOf(l, this.comp);
+      console.log(this.comp);
+      console.log(data.word);
+      _ref = data.word;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        l = _ref[_i];
+        index = _.indexOf(this.comp, l);
+        console.log("letter " + l + " has " + index);
         if (index === -1) return false;
         this.comp.splice(index, 1);
+        console.log(this.comp);
       }
       return true;
     };
@@ -91,25 +118,23 @@
     io.sockets.emit('letters', {
       letters: TheBag.letters
     });
-    socket.on('reset', function(data) {
-      console.log('resetting');
-      status = "War is imminent!";
-      return io.sockets.emit('status', {
-        status: status
-      });
-    });
     return socket.on('submit', function(data) {
       console.log('submitting', data);
       if (!TheBag.wordIsInBag(data)) {
+        console.log("word not in bag");
         io.sockets.emit('wrong', {
           status: 'not in bag'
         });
       }
-      if (!TheBag.wordIsValid(data)) {
-        return io.sockets.emit('wrong', {
+      if (!TheBag.isValidWord(data)) {
+        console.log("word not valid");
+        io.sockets.emit('wrong', {
           status: 'not valid'
         });
       }
+      return io.sockets.emit('right', {
+        status: 'correct'
+      });
     });
   });
 
