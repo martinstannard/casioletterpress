@@ -9,6 +9,7 @@ body {
 }
 
 article {
+  position: relative;
   width: 272px;
   height: 412px;
   margin: 0 auto;
@@ -18,15 +19,45 @@ article {
   font-weight: bold;
 }
 
+article h1 {
+  position: absolute;
+  margin: 0;
+  top: 7px;
+  font-size: 9px;
+  text-transform: uppercase;
+  color: #BABABA;
+  line-height: 20px
+}
+
+article h1 span {
+  color: #777;
+}
+
+.screen {
+  margin-bottom: 20px;
+}
+
+.screen p {
+  background-color: #DEFFD5;
+  height: 50px;
+  border: 1px solid #BBB;
+  margin: 0;
+}
+
 .button {
   float:left;
   width: 50px;
   height: 50px;
   margin-right: 10px;
-  line-height: 50px;
+  line-height: 48px;
+  font-size: 36px;
   text-align: center;
-  border: 1px solid #BBBBBB;
+  border: 1px solid #BBB;
   background-color: white;
+}
+
+.button.on {
+  background-color: #99FF99;
 }
 
 .button:last-child {
@@ -34,6 +65,35 @@ article {
 }
 .button:hover {
   cursor: pointer;
+}
+
+.commands {
+  margin-bottom: 20px;
+}
+
+.commands .button {
+  height: 30px;
+  line-height: 30px;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.commands .button.delete {
+  margin-right: 70px;
+  background-color: #FFCC99;
+
+}
+
+.commands .button.send {
+  background-color: #99FF99;
+}
+
+.commands .button.clear {
+  background-color: #FF9999
+}
+
+.letters .row {
+  margin-bottom: 10px;
 }
 
 .cf:before, .cf:after {
