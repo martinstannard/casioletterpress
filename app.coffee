@@ -40,6 +40,20 @@ server.listen(app.get('port'), ->
 
 status = "All is well."
 
+class Scoreboard
+
+  constructor: ->
+    @scores = {}
+
+
+  addScore: (clientId, score) ->
+    if @scores[clientId]?
+      @scores[clientId] += score
+    else
+      @scores[clientId] = score
+
+  table: ->
+    @scores
 
 class Bag
 
@@ -56,7 +70,12 @@ class Bag
   validWords: ->
 
 
-  wordIsInBag: (word) ->
+  wordIsInBag: (data) ->
+    @comp = @letters
+    for l in data.word
+      index = _.indexOf(@comp, l)
+      return false if index is -1
+      @comp.splice index, 1
     true
 
 
@@ -69,9 +88,20 @@ io.sockets.on('connection', (socket) ->
   io.sockets.emit('status', { status: status })
   io.sockets.emit('letters', { letters: TheBag.letters })
   # note the use of io.sockets to emit but socket.on to listen
-  socket.on('reset', (data) ->
-    console.log 'resetting'
-    status = "War is imminent!";
-    io.sockets.emit('status', { status: status })
+  socket.on('submit', (data) ->
+    console.log 'submitting', data
+    # is this in TheBag?
+    unless TheBag.wordIsInBag data
+      console.log "word not in bag"
+      io.sockets.emit('wrong', { status: 'not in bag' })
+      return
+    unless TheBag.isValidWord data
+      console.log "word not valid"
+      io.sockets.emit('wrong', { status: 'not valid' })
+      return
+    io.sockets.emit('right', { status: 'correct' })
+    # update scores
+    # send score back to player
+    # broadcast scoreboard
   )
 )
