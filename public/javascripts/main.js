@@ -37,13 +37,20 @@
 
     LetterPressCalculator.prototype._initCommandHandlers = function() {
       var _this = this;
-      return this.commandsEl.find('.send').click(function() {
+      this.commandsEl.find('.send').click(function() {
         return _this._send();
+      });
+      return this.commandsEl.find('.delete').click(function() {
+        return _this._deleteScreenText();
       });
     };
 
     LetterPressCalculator.prototype._appendScreenText = function(str) {
       return this.screenTextEl.text("" + (this.screenText()) + str);
+    };
+
+    LetterPressCalculator.prototype._deleteScreenText = function() {
+      return this.screenTextEl.text(this.screenText().slice(1));
     };
 
     LetterPressCalculator.prototype._buildLetterButtons = function(letters) {

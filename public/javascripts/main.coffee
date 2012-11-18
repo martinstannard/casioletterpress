@@ -25,10 +25,14 @@ class LetterPressCalculator
   _initCommandHandlers: ->
     @commandsEl.find('.send').click =>
       @_send()
-
+    @commandsEl.find('.delete').click =>
+      @_deleteScreenText()
 
   _appendScreenText: (str) ->
     @screenTextEl.text("#{@screenText()}#{str}")
+
+  _deleteScreenText: ->
+    @screenTextEl.text(@screenText().slice(1))
 
   _buildLetterButtons: (letters) ->
     rowTemplate = _.template """
