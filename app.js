@@ -87,16 +87,12 @@
     Bag.prototype.wordIsInBag = function(data) {
       var index, l, _i, _len, _ref;
       this.comp = this.letters;
-      console.log(this.comp);
-      console.log(data.word);
       _ref = data.word;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         l = _ref[_i];
         index = _.indexOf(this.comp, l);
-        console.log("letter " + l + " has " + index);
         if (index === -1) return false;
         this.comp.splice(index, 1);
-        console.log(this.comp);
       }
       return true;
     };
@@ -125,12 +121,14 @@
         io.sockets.emit('wrong', {
           status: 'not in bag'
         });
+        return;
       }
       if (!TheBag.isValidWord(data)) {
         console.log("word not valid");
         io.sockets.emit('wrong', {
           status: 'not valid'
         });
+        return;
       }
       return io.sockets.emit('right', {
         status: 'correct'

@@ -72,14 +72,10 @@ class Bag
 
   wordIsInBag: (data) ->
     @comp = @letters
-    console.log @comp
-    console.log data.word
     for l in data.word
       index = _.indexOf(@comp, l)
-      console.log "letter #{l} has #{index}"
       return false if index is -1
       @comp.splice index, 1
-      console.log @comp
     true
 
 
@@ -98,9 +94,11 @@ io.sockets.on('connection', (socket) ->
     unless TheBag.wordIsInBag data
       console.log "word not in bag"
       io.sockets.emit('wrong', { status: 'not in bag' })
+      return
     unless TheBag.isValidWord data
       console.log "word not valid"
       io.sockets.emit('wrong', { status: 'not valid' })
+      return
     io.sockets.emit('right', { status: 'correct' })
     # update scores
     # send score back to player
