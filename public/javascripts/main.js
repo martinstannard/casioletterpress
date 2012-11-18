@@ -7,7 +7,9 @@
     return $('#status').html(data.status);
   });
 
-  console.log($);
+  socket.on('letters', function(data) {
+    return $('#letters').html(data.letters);
+  });
 
   $(function() {
     return $('#reset').click(function() {

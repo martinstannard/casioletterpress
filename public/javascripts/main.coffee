@@ -3,7 +3,9 @@ socket = io.connect(window.location.hostname)
 socket.on('status', (data) ->
   $('#status').html(data.status)
 )
-console.log($)
+socket.on('letters', (data) ->
+  $('#letters').html(data.letters)
+)
 $ ->
 
   $('#reset').click( ->
