@@ -22,7 +22,7 @@ class LetterPressCalculator
       @_buildLetterButtons(data.letters)
       @_clearScreenText()
       @_lightsOff()
-      @_initKeyboardEvents(data.letters)
+      #@_initKeyboardEvents(data.letters)
       @_initLetterHandlers()
 
     @socket.on 'wrong', => @_wrongLightOn()

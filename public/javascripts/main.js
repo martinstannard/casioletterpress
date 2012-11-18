@@ -27,7 +27,6 @@
         _this._buildLetterButtons(data.letters);
         _this._clearScreenText();
         _this._lightsOff();
-        _this._initKeyboardEvents(data.letters);
         return _this._initLetterHandlers();
       });
       this.socket.on('wrong', function() {
