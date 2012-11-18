@@ -57,6 +57,11 @@ class Bag
 
 
   wordIsInBag: (word) ->
+    @comp = @letters
+    for l in word
+      index = _.indexOf(l, @comp)
+      return false if index is -1
+      @comp.splice index, 1
     true
 
 
@@ -64,6 +69,8 @@ class Bag
     true
 
 TheBag = new Bag
+
+debugger
 
 io.sockets.on('connection', (socket) ->
   io.sockets.emit('status', { status: status })
@@ -73,5 +80,16 @@ io.sockets.on('connection', (socket) ->
     console.log 'resetting'
     status = "War is imminent!";
     io.sockets.emit('status', { status: status })
+  )
+  socket.on('submit', (data) ->
+    console.log 'submitting', data
+    # is this in TheBag?
+    unless TheBag.wordIsInBag data
+      io.sockets.emit('wrong', { status: 'not in bag' })
+    unless TheBag.wordIsValid data
+      io.sockets.emit('wrong', { status: 'not valid' })
+    # update scores
+    # send score back to player
+    # broadcast scoreboard
   )
 )
