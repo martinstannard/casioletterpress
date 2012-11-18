@@ -11,12 +11,20 @@ LetterPressCalculator = (function() {
     this.screenTextEl = this.el.find('section.screen p');
     this.commandsEl = this.el.find('section.commands');
     this.lettersEl = this.el.find('section.letters');
-    this._initLetterHandlers();
+    this._initSocketHandlers();
     this._initCommandHandlers();
   }
 
   LetterPressCalculator.prototype.screenText = function() {
     return $.trim(this.screenTextEl.text());
+  };
+
+  LetterPressCalculator.prototype._initSocketHandlers = function() {
+    var _this = this;
+    return this.socket.on('letters', function(data) {
+      _this._buildLetterButtons(data.letters);
+      return _this._initLetterHandlers();
+    });
   };
 
   LetterPressCalculator.prototype._initLetterHandlers = function() {
@@ -37,6 +45,23 @@ LetterPressCalculator = (function() {
     return this.screenTextEl.text("" + (this.screenText()) + str);
   };
 
+  LetterPressCalculator.prototype._buildLetterButtons = function(letters) {
+    var rowTemplate;
+    rowTemplate = _.template("<div class='row cf'>\n  <div class='button' data-letter='<%= list[0] %>'><%= list[0] %></div>\n  <div class='button' data-letter='<%= list[1] %>'>\n    <%= list[1] %>\n  </div>\n  <div class='button' data-letter='<%= list[2] %>'>\n    <%= list[2] %>\n  </div>\n  <div class='button' data-letter='<%= list[3] %>'>\n    <%= list[3] %>\n  </div>\n</div>");
+    this.lettersEl.append(rowTemplate({
+      list: letters.slice(0, 4)
+    }));
+    this.lettersEl.append(rowTemplate({
+      list: letters.slice(4, 8)
+    }));
+    this.lettersEl.append(rowTemplate({
+      list: letters.slice(8, 12)
+    }));
+    return this.lettersEl.append(rowTemplate({
+      list: letters.slice(12, 16)
+    }));
+  };
+
   LetterPressCalculator.prototype._send = function() {
     if (this.screenText().length > 0) {
       return this.socket.emit('word', this.screenText());
@@ -50,15 +75,8 @@ LetterPressCalculator = (function() {
 $(function() {
   var socket;
   socket = io.connect(window.location.hostname);
-  socket.on('status', function(data) {
-    return $('#status').html(data.status);
-  });
-  socket.on('letters', function(data) {
+  new LetterPressCalculator($('article'), socket);
+  return socket.on('letters', function(data) {
     return $('#letters').html(data.letters);
   });
-  $('#reset').click(function() {
-    console.log('resetting');
-    return socket.emit('reset');
-  });
-  return new LetterPressCalculator($('article'), socket);
 });
