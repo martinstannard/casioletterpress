@@ -6,7 +6,10 @@ routes = require('./routes')
 user = require('./routes/user')
 http = require('http')
 path = require('path')
+spell = require('lazy')
 _ = require('underscore')
+lazy = require("lazy")
+fs = require("fs")
 
 app = express()
 
@@ -58,7 +61,7 @@ class Scoreboard
 class Bag
 
   constructor: ->
-    @validWords()
+    #@validWords()
     @grabLetters()
 
   grabLetters: ->
@@ -68,11 +71,16 @@ class Bag
     )
 
   validWords: ->
+     new lazy(fs.createReadStream('/usr/share/dict/words'))
+       .lines
+       .forEach( (line) ->
+         #console.log(line.toString())
+     )
 
 
-  wordIsInBag: (data) ->
+  wordIsInBag: (word) ->
     @comp = @letters
-    for l in data.word
+    for l in word
       index = _.indexOf(@comp, l)
       return false if index is -1
       @comp.splice index, 1
@@ -80,7 +88,12 @@ class Bag
 
 
   isValidWord: (word) ->
-    true
+    new lazy(fs.createReadStream('/usr/share/dict/words'))
+      .lines
+      .forEach( (line) ->
+        return true if word is line
+    )
+    false
 
 TheBag = new Bag
 
@@ -88,7 +101,7 @@ io.sockets.on('connection', (socket) ->
   io.sockets.emit('status', { status: status })
   io.sockets.emit('letters', { letters: TheBag.letters })
   # note the use of io.sockets to emit but socket.on to listen
-  socket.on('submit', (data) ->
+  socket.on('word', (data) ->
     console.log 'submitting', data
     # is this in TheBag?
     unless TheBag.wordIsInBag data
