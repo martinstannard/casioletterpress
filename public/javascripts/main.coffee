@@ -25,6 +25,14 @@ class LetterPressCalculator
 
     @socket.on 'right', => @_correctLightOn()
 
+    @socket.on 'scoreboard', (scores) =>
+      # data is a hash of scores
+      console.log scores
+
+    @socket.on 'youare', (id) =>
+      # data is your id
+      console.log id
+
   _initLetterHandlers: ->
     @lettersEl.find(".button").click (e) =>
       unless $(e.currentTarget).hasClass("on")
@@ -65,7 +73,11 @@ class LetterPressCalculator
     @correctEl.removeClass("on")
     @wrongEl.removeClass("on")
 
+  _scoreboard: ->
+
+
   _buildLetterButtons: (letters) ->
+    @lettersEl.find(".row").remove()
     rowTemplate = _.template """
       <div class='row cf'>
         <div class='button' data-letter='<%= list[0] %>'><%= list[0] %></div>
