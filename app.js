@@ -139,10 +139,9 @@
       if (word.length < 3) return false;
       console.log("isValidWord " + word);
       new lazy(fs.createReadStream('/usr/share/dict/words')).lines.forEach(function(line) {
-        console.log(word, line.toString().toUpperCase().slice(0, -1));
-        if (word === line.toString().toUpperCase().replace(/[\n\r]/g, '')) {
-          return true;
-        }
+        line = line.toString().toUpperCase().slice(0);
+        console.log(word, line);
+        return word === line;
       });
       return false;
     };

@@ -119,8 +119,9 @@ class Bag
     new lazy(fs.createReadStream('/usr/share/dict/words'))
       .lines
       .forEach( (line) ->
-        console.log word, line.toString().toUpperCase()[0..-2]
-        return true if word is line.toString().toUpperCase().replace(/[\n\r]/g, '')
+        line = line.toString().toUpperCase()[0..-1]
+        console.log word, line
+        word is line
     )
     false
 
