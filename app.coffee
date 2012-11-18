@@ -50,15 +50,21 @@ class Clients
 
 
   addWord: (clientId, word) ->
-    if @player[clientId]?
+    if @players[clientId]?
+      console.log "pushing word"
       @players[clientId].push word
     else
+      console.log "creating client word list"
       @players[clientId] = []
       @players[clientId].push word
+    console.log "aading word #{word}"
+    console.log @players[clientId]
 
   playerUsedWord: (clientId, word) ->
-    return true unless @players[clientId]
+    return false unless @players[clientId]
+    console.log clientId, word
     _.find(@players[clientId], (w) ->
+      console.log w, word
       w is word
     )
 
@@ -81,22 +87,26 @@ class Scoreboard
 class Bag
 
   constructor: ->
-    #@validWords()
     @grabLetters()
+    @getDictWords(@setDictWords)
 
   grabLetters: ->
-    bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRlRSSSTTTTUUUVWWWXYYYZ"
+    bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRRSSSTTTTUUUVWWWXYYYZ"
     @letters = _.map([0..15], ->
       bag[Math.floor(Math.random() * bag.length)]
     )
 
-  validWords: ->
-     new lazy(fs.createReadStream('/usr/share/dict/words'))
-       .lines
-       .forEach( (line) ->
-         #console.log(line.toString())
-     )
+  getDictWords: (callback) ->
+    @dict = []
+    new lazy(fs.createReadStream('/usr/share/dict/words'))
+      .lines
+      .map( (line) =>
+        line.toString().toUpperCase()[0..-1]
+    ).join(callback)
 
+  setDictWords: (dict) =>
+    @dict = dict
+    console.log "@dict size #{@dict.length}"
 
   wordIsInBag: (word) ->
     @comp = _.clone @letters
@@ -108,15 +118,10 @@ class Bag
 
 
   isValidWord: (word) ->
-    return true
     return false if word.length < 3
-    new lazy(fs.createReadStream('/usr/share/dict/words'))
-      .lines
-      .forEach( (line) ->
-        #console.log _.trim(line)
-        return true if word is line.toString().toUpperCase().replace(/[\n\r]/g, '')
+    _.find(@dict, (w) ->
+      word is w
     )
-    false
 
 TheBag = new Bag
 scoreboard = new Scoreboard
@@ -133,7 +138,9 @@ io.sockets.on('connection', (socket) ->
       console.log "word not in bag"
       io.sockets.emit('wrong', { status: 'not in bag' })
       return
-    unless TheBag.isValidWord data
+    isValid = TheBag.isValidWord data
+    console.log "isValid #{isValid}"
+    unless isValid
       console.log "word not valid"
       io.sockets.emit('wrong', { status: 'not valid' })
       return
@@ -141,11 +148,11 @@ io.sockets.on('connection', (socket) ->
       console.log "word already used"
       io.sockets.emit('wrong', { status: 'word already used' })
       return
-    clients.addWord(socketId, data)
+    clients.addWord(socket.id, data)
     io.sockets.emit('right', { status: 'correct' })
     # update scores
     scoreboard.addScore socket.id, data.length
     console.log scoreboard
-    io.socket.broadcast('scoreboard', scoreboard.scores)
+    io.sockets.emit('scoreboard', scoreboard.scores)
   )
 )

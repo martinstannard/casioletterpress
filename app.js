@@ -1,5 +1,6 @@
 (function() {
-  var Bag, Scoreboard, TheBag, app, express, http, io, path, routes, server, status, user, _;
+  var Bag, Clients, Scoreboard, TheBag, app, clients, express, fs, http, io, lazy, path, routes, scoreboard, server, spell, status, user, _,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   express = require('express');
 
@@ -11,7 +12,13 @@
 
   path = require('path');
 
+  spell = require('lazy');
+
   _ = require('underscore');
+
+  lazy = require("lazy");
+
+  fs = require("fs");
 
   app = express();
 
@@ -45,6 +52,38 @@
 
   status = "All is well.";
 
+  Clients = (function() {
+
+    function Clients() {
+      this.players = {};
+    }
+
+    Clients.prototype.addWord = function(clientId, word) {
+      if (this.players[clientId] != null) {
+        console.log("pushing word");
+        this.players[clientId].push(word);
+      } else {
+        console.log("creating client word list");
+        this.players[clientId] = [];
+        this.players[clientId].push(word);
+      }
+      console.log("aading word " + word);
+      return console.log(this.players[clientId]);
+    };
+
+    Clients.prototype.playerUsedWord = function(clientId, word) {
+      if (!this.players[clientId]) return false;
+      console.log(clientId, word);
+      return _.find(this.players[clientId], function(w) {
+        console.log(w, word);
+        return w === word;
+      });
+    };
+
+    return Clients;
+
+  })();
+
   Scoreboard = (function() {
 
     function Scoreboard() {
@@ -70,26 +109,36 @@
   Bag = (function() {
 
     function Bag() {
-      this.validWords();
-      this.grabLetters();
+      this.setDictWords = __bind(this.setDictWords, this);      this.grabLetters();
+      this.getDictWords(this.setDictWords);
     }
 
     Bag.prototype.grabLetters = function() {
       var bag;
-      bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRlRSSSTTTTUUUVWWWXYYYZ";
+      bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRRSSSTTTTUUUVWWWXYYYZ";
       return this.letters = _.map([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], function() {
         return bag[Math.floor(Math.random() * bag.length)];
       });
     };
 
-    Bag.prototype.validWords = function() {};
+    Bag.prototype.getDictWords = function(callback) {
+      var _this = this;
+      this.dict = [];
+      return new lazy(fs.createReadStream('/usr/share/dict/words')).lines.map(function(line) {
+        return line.toString().toUpperCase().slice(0);
+      }).join(callback);
+    };
 
-    Bag.prototype.wordIsInBag = function(data) {
-      var index, l, _i, _len, _ref;
-      this.comp = this.letters;
-      _ref = data.word;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        l = _ref[_i];
+    Bag.prototype.setDictWords = function(dict) {
+      this.dict = dict;
+      return console.log("@dict size " + this.dict.length);
+    };
+
+    Bag.prototype.wordIsInBag = function(word) {
+      var index, l, _i, _len;
+      this.comp = _.clone(this.letters);
+      for (_i = 0, _len = word.length; _i < _len; _i++) {
+        l = word[_i];
         index = _.indexOf(this.comp, l);
         if (index === -1) return false;
         this.comp.splice(index, 1);
@@ -98,7 +147,10 @@
     };
 
     Bag.prototype.isValidWord = function(word) {
-      return true;
+      if (word.length < 3) return false;
+      return _.find(this.dict, function(w) {
+        return word === w;
+      });
     };
 
     return Bag;
@@ -107,6 +159,10 @@
 
   TheBag = new Bag;
 
+  scoreboard = new Scoreboard;
+
+  clients = new Clients;
+
   io.sockets.on('connection', function(socket) {
     io.sockets.emit('status', {
       status: status
@@ -114,7 +170,8 @@
     io.sockets.emit('letters', {
       letters: TheBag.letters
     });
-    return socket.on('submit', function(data) {
+    return socket.on('word', function(data) {
+      var isValid;
       console.log('submitting', data);
       if (!TheBag.wordIsInBag(data)) {
         console.log("word not in bag");
@@ -123,16 +180,29 @@
         });
         return;
       }
-      if (!TheBag.isValidWord(data)) {
+      isValid = TheBag.isValidWord(data);
+      console.log("isValid " + isValid);
+      if (!isValid) {
         console.log("word not valid");
         io.sockets.emit('wrong', {
           status: 'not valid'
         });
         return;
       }
-      return io.sockets.emit('right', {
+      if (clients.playerUsedWord(socket.id, data)) {
+        console.log("word already used");
+        io.sockets.emit('wrong', {
+          status: 'word already used'
+        });
+        return;
+      }
+      clients.addWord(socket.id, data);
+      io.sockets.emit('right', {
         status: 'correct'
       });
+      scoreboard.addScore(socket.id, data.length);
+      console.log(scoreboard);
+      return io.sockets.emit('scoreboard', scoreboard.scores);
     });
   });
 
