@@ -1,6 +1,7 @@
 (function() {
   var Bag, Clients, Scoreboard, TheBag, app, clients, express, fs, http, io, lazy, path, routes, scoreboard, server, spell, status, user, _,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    _this = this;
 
   express = require('express');
 
@@ -58,12 +59,23 @@
       this.players = {};
     }
 
+    Clients.prototype.clear = function() {
+      var id, words, _ref, _results;
+      console.log("clearing");
+      _ref = this.players;
+      _results = [];
+      for (id in _ref) {
+        words = _ref[id];
+        console.log(id, words);
+        _results.push(this.players[id] = []);
+      }
+      return _results;
+    };
+
     Clients.prototype.addWord = function(clientId, word) {
       if (this.players[clientId] != null) {
-        console.log("pushing word");
         this.players[clientId].push(word);
       } else {
-        console.log("creating client word list");
         this.players[clientId] = [];
         this.players[clientId].push(word);
       }
@@ -75,7 +87,6 @@
       if (!this.players[clientId]) return false;
       console.log(clientId, word);
       return _.find(this.players[clientId], function(w) {
-        console.log(w, word);
         return w === word;
       });
     };
@@ -169,17 +180,17 @@
 
   io.sockets.on('connection', function(socket) {
     if (!scoreboard.exists(socket.id)) {
-      io.sockets.emit('letters', {
+      socket.emit('letters', {
         letters: TheBag.letters
       });
-      io.sockets.emit('youare', socket.id);
+      socket.emit('youare', socket.id);
     }
     return socket.on('word', function(data) {
       var isValid;
       console.log('submitting', data);
       if (!TheBag.wordIsInBag(data)) {
         console.log("word not in bag");
-        io.sockets.emit('wrong', {
+        socket.emit('wrong', {
           status: 'not in bag'
         });
         return;
@@ -188,20 +199,20 @@
       console.log("isValid " + isValid);
       if (!isValid) {
         console.log("word not valid");
-        io.sockets.emit('wrong', {
+        socket.emit('wrong', {
           status: 'not valid'
         });
         return;
       }
       if (clients.playerUsedWord(socket.id, data)) {
         console.log("word already used");
-        io.sockets.emit('wrong', {
+        socket.emit('wrong', {
           status: 'word already used'
         });
         return;
       }
       clients.addWord(socket.id, data);
-      io.sockets.emit('right', {
+      socket.emit('right', {
         status: 'correct',
         words: clients.playerWords(socket.id)
       });
@@ -210,5 +221,13 @@
       return io.sockets.emit('scoreboard', scoreboard.scores);
     });
   });
+
+  setInterval(function() {
+    TheBag = new Bag;
+    clients.clear();
+    return io.sockets.emit('letters', {
+      letters: TheBag.letters
+    });
+  }, 30000);
 
 }).call(this);

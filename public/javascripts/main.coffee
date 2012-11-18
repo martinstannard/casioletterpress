@@ -23,7 +23,9 @@ class LetterPressCalculator
 
     @socket.on 'wrong', => @_wrongLightOn()
 
-    @socket.on 'right', => @_correctLightOn()
+    @socket.on 'right', =>
+      @_correctLightOn()
+      @_clearScreenText()
 
     @socket.on 'scoreboard', (scores) =>
       # data is a hash of scores
@@ -57,7 +59,6 @@ class LetterPressCalculator
     @lettersEl.find(".button.on[data-letter='#{char}']").last().removeClass("on")
 
   _clearScreenText: ->
-    @_lightsOff()
     @screenTextEl.text("")
     @lettersEl.find(".button").removeClass("on")
 

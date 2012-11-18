@@ -30,7 +30,8 @@
         return _this._wrongLightOn();
       });
       this.socket.on('right', function() {
-        return _this._correctLightOn();
+        _this._correctLightOn();
+        return _this._clearScreenText();
       });
       this.socket.on('scoreboard', function(scores) {
         return console.log(scores);
@@ -76,7 +77,6 @@
     };
 
     LetterPressCalculator.prototype._clearScreenText = function() {
-      this._lightsOff();
       this.screenTextEl.text("");
       return this.lettersEl.find(".button").removeClass("on");
     };
