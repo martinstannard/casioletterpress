@@ -114,11 +114,14 @@ class LetterPressCalculator
   _initKeyboardEvents: (letters) ->
     for letter in _.uniq(letters)
       do (letter) =>
+        key.unbind letter
         key letter, =>
           selector = ".button[data-letter='#{letter}']:not(.on):first"
           console.log @lettersEl.find(selector).get(0)
           @lettersEl.find(selector).get(0).click()
 
+    for keyName in ['enter', 'backspace', 'esc', 'ctrl+backspace']
+      key.unbind keyName
     key 'enter', => @commandsEl.find('.send').click()
     key 'backspace', =>
        @commandsEl.find('.delete').click()
