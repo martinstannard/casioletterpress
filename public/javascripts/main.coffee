@@ -36,10 +36,13 @@ class LetterPressCalculator
     @screenTextEl.text("#{@screenText()}#{str}")
 
   _deleteScreenText: ->
-    @screenTextEl.text(@screenText().slice(1))
+    char = @screenText().slice(-1)
+    @screenTextEl.text(@screenText().slice(0,-1))
+    @lettersEl.find(".button.on[data-letter='#{char}']").last().removeClass("on")
 
   _clearScreenText: ->
     @screenTextEl.text("")
+    @lettersEl.find(".button").removeClass("on")
 
   _buildLetterButtons: (letters) ->
     rowTemplate = _.template """

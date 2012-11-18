@@ -56,11 +56,15 @@
     };
 
     LetterPressCalculator.prototype._deleteScreenText = function() {
-      return this.screenTextEl.text(this.screenText().slice(1));
+      var char;
+      char = this.screenText().slice(-1);
+      this.screenTextEl.text(this.screenText().slice(0, -1));
+      return this.lettersEl.find(".button.on[data-letter='" + char + "']").last().removeClass("on");
     };
 
     LetterPressCalculator.prototype._clearScreenText = function() {
-      return this.screenTextEl.text("");
+      this.screenTextEl.text("");
+      return this.lettersEl.find(".button").removeClass("on");
     };
 
     LetterPressCalculator.prototype._buildLetterButtons = function(letters) {
