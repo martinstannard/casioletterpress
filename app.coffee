@@ -59,7 +59,7 @@ isInBag = (word) ->
 
 io.sockets.on('connection', (socket) ->
   io.sockets.emit('status', { status: status })
-  io.sockets.emit('letters', { letters: CurrentLetters })
+  io.sockets.emit('letters', { letters: letters() })
   # note the use of io.sockets to emit but socket.on to listen
   socket.on('reset', (data) ->
     console.log 'resetting'
