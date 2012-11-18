@@ -21,6 +21,10 @@ class LetterPressCalculator
       @_buildLetterButtons(data.letters)
       @_initLetterHandlers()
 
+    @socket.on 'wrong', => @_wrongLightOn()
+
+    @socket.on 'right', => @_correctLightOn()
+
   _initLetterHandlers: ->
     @lettersEl.find(".button").click (e) =>
       unless $(e.currentTarget).hasClass("on")
