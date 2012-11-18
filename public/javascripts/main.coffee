@@ -26,6 +26,7 @@ class LetterPressCalculator
     @commandsEl.find('.send').click =>
       @_send()
 
+
   _appendScreenText: (str) ->
     @screenTextEl.text("#{@screenText()}#{str}")
 
@@ -56,8 +57,5 @@ class LetterPressCalculator
 
 $ ->
   socket = io.connect(window.location.hostname)
-
   new LetterPressCalculator($('article'), socket)
-
-  socket.on 'letters', (data) ->
-    $('#letters').html(data.letters)
+  true
