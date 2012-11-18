@@ -49,12 +49,16 @@ class Clients
     @players = {}
 
 
+  clear: ->
+    console.log "clearing"
+    for id, words of @players
+      console.log id, words
+      @players[id] = []
+
   addWord: (clientId, word) ->
     if @players[clientId]?
-      console.log "pushing word"
       @players[clientId].push word
     else
-      console.log "creating client word list"
       @players[clientId] = []
       @players[clientId].push word
     console.log "aading word #{word}"
@@ -64,9 +68,11 @@ class Clients
     return false unless @players[clientId]
     console.log clientId, word
     _.find(@players[clientId], (w) ->
-      console.log w, word
       w is word
     )
+
+  playerWords: (clientId) ->
+    @players[clientId].reverse()
 
 
 class Scoreboard
@@ -77,12 +83,14 @@ class Scoreboard
 
   addScore: (clientId, score) ->
     if @scores[clientId]?
-      @scores[clientId] += score
+      @scores[clientId] += score * 2
     else
-      @scores[clientId] = score
+      @scores[clientId] = score * 2
 
-  table: ->
-    @scores
+
+  exists: (clientId) ->
+    @scores[clientId]?
+
 
 class Bag
 
@@ -128,31 +136,40 @@ scoreboard = new Scoreboard
 clients = new Clients
 
 io.sockets.on('connection', (socket) ->
-  io.sockets.emit('status', { status: status })
-  io.sockets.emit('letters', { letters: TheBag.letters })
+  unless scoreboard.exists(socket.id)
+    socket.emit('letters', { letters: TheBag.letters })
+    socket.emit('youare', socket.id)
   # note the use of io.sockets to emit but socket.on to listen
   socket.on('word', (data) ->
     console.log 'submitting', data
     # is this in TheBag?
     unless TheBag.wordIsInBag data
       console.log "word not in bag"
-      io.sockets.emit('wrong', { status: 'not in bag' })
+      socket.emit('wrong', { status: 'not in bag' })
       return
     isValid = TheBag.isValidWord data
     console.log "isValid #{isValid}"
     unless isValid
       console.log "word not valid"
-      io.sockets.emit('wrong', { status: 'not valid' })
+      socket.emit('wrong', { status: 'not valid' })
       return
     if clients.playerUsedWord(socket.id, data)
       console.log "word already used"
-      io.sockets.emit('wrong', { status: 'word already used' })
+      socket.emit('wrong', { status: 'word already used' })
       return
     clients.addWord(socket.id, data)
-    io.sockets.emit('right', { status: 'correct' })
+    socket.emit('right', { status: 'correct', words: clients.playerWords(socket.id) })
     # update scores
     scoreboard.addScore socket.id, data.length
     console.log scoreboard
     io.sockets.emit('scoreboard', scoreboard.scores)
   )
 )
+
+setInterval( =>
+    TheBag = new Bag
+    clients.clear()
+    io.sockets.emit('letters', { letters: TheBag.letters })
+, 30000)
+
+

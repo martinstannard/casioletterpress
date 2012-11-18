@@ -1,6 +1,7 @@
 (function() {
   var Bag, Clients, Scoreboard, TheBag, app, clients, express, fs, http, io, lazy, path, routes, scoreboard, server, spell, status, user, _,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    _this = this;
 
   express = require('express');
 
@@ -58,12 +59,23 @@
       this.players = {};
     }
 
+    Clients.prototype.clear = function() {
+      var id, words, _ref, _results;
+      console.log("clearing");
+      _ref = this.players;
+      _results = [];
+      for (id in _ref) {
+        words = _ref[id];
+        console.log(id, words);
+        _results.push(this.players[id] = []);
+      }
+      return _results;
+    };
+
     Clients.prototype.addWord = function(clientId, word) {
       if (this.players[clientId] != null) {
-        console.log("pushing word");
         this.players[clientId].push(word);
       } else {
-        console.log("creating client word list");
         this.players[clientId] = [];
         this.players[clientId].push(word);
       }
@@ -75,9 +87,12 @@
       if (!this.players[clientId]) return false;
       console.log(clientId, word);
       return _.find(this.players[clientId], function(w) {
-        console.log(w, word);
         return w === word;
       });
+    };
+
+    Clients.prototype.playerWords = function(clientId) {
+      return this.players[clientId].reverse();
     };
 
     return Clients;
@@ -92,14 +107,14 @@
 
     Scoreboard.prototype.addScore = function(clientId, score) {
       if (this.scores[clientId] != null) {
-        return this.scores[clientId] += score;
+        return this.scores[clientId] += score * 2;
       } else {
-        return this.scores[clientId] = score;
+        return this.scores[clientId] = score * 2;
       }
     };
 
-    Scoreboard.prototype.table = function() {
-      return this.scores;
+    Scoreboard.prototype.exists = function(clientId) {
+      return this.scores[clientId] != null;
     };
 
     return Scoreboard;
@@ -164,18 +179,18 @@
   clients = new Clients;
 
   io.sockets.on('connection', function(socket) {
-    io.sockets.emit('status', {
-      status: status
-    });
-    io.sockets.emit('letters', {
-      letters: TheBag.letters
-    });
+    if (!scoreboard.exists(socket.id)) {
+      socket.emit('letters', {
+        letters: TheBag.letters
+      });
+      socket.emit('youare', socket.id);
+    }
     return socket.on('word', function(data) {
       var isValid;
       console.log('submitting', data);
       if (!TheBag.wordIsInBag(data)) {
         console.log("word not in bag");
-        io.sockets.emit('wrong', {
+        socket.emit('wrong', {
           status: 'not in bag'
         });
         return;
@@ -184,26 +199,35 @@
       console.log("isValid " + isValid);
       if (!isValid) {
         console.log("word not valid");
-        io.sockets.emit('wrong', {
+        socket.emit('wrong', {
           status: 'not valid'
         });
         return;
       }
       if (clients.playerUsedWord(socket.id, data)) {
         console.log("word already used");
-        io.sockets.emit('wrong', {
+        socket.emit('wrong', {
           status: 'word already used'
         });
         return;
       }
       clients.addWord(socket.id, data);
-      io.sockets.emit('right', {
-        status: 'correct'
+      socket.emit('right', {
+        status: 'correct',
+        words: clients.playerWords(socket.id)
       });
       scoreboard.addScore(socket.id, data.length);
       console.log(scoreboard);
       return io.sockets.emit('scoreboard', scoreboard.scores);
     });
   });
+
+  setInterval(function() {
+    TheBag = new Bag;
+    clients.clear();
+    return io.sockets.emit('letters', {
+      letters: TheBag.letters
+    });
+  }, 30000);
 
 }).call(this);
