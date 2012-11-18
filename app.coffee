@@ -40,26 +40,34 @@ server.listen(app.get('port'), ->
 
 status = "All is well."
 
-CurrentLetters = null
+
+class Bag
+
+  constructor: ->
+    @validWords()
+    @grabLetters()
+
+  grabLetters: ->
+    bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRlRSSSTTTTUUUVWWWXYYYZ"
+    @letters = _.map([0..15], ->
+      bag[Math.floor(Math.random() * bag.length)]
+    )
+
+  validWords: ->
 
 
-letters = ->
-  bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRlRSSSTTTTUUUVWWWXYYYZ"
-  _.map([0..15], ->
-    bag[Math.floor(Math.random() * bag.length)]
-  )
+  wordIsInBag: (word) ->
+    true
 
-CurrentLetters = letters()
 
-isValidWord = (word) ->
-  true
+  isValidWord: (word) ->
+    true
 
-isInBag = (word) ->
-  true
+TheBag = new Bag
 
 io.sockets.on('connection', (socket) ->
   io.sockets.emit('status', { status: status })
-  io.sockets.emit('letters', { letters: letters() })
+  io.sockets.emit('letters', { letters: TheBag.letters })
   # note the use of io.sockets to emit but socket.on to listen
   socket.on('reset', (data) ->
     console.log 'resetting'
