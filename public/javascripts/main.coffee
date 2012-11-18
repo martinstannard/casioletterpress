@@ -20,6 +20,8 @@ class LetterPressCalculator
   _initSocketHandlers: ->
     @socket.on 'letters', (data) =>
       @_buildLetterButtons(data.letters)
+      @_clearScreenText()
+      @_lightsOff()
       @_initLetterHandlers()
 
     @socket.on 'wrong', => @_wrongLightOn()

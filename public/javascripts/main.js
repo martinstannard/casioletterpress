@@ -28,6 +28,8 @@
       var _this = this;
       this.socket.on('letters', function(data) {
         _this._buildLetterButtons(data.letters);
+        _this._clearScreenText();
+        _this._lightsOff();
         return _this._initLetterHandlers();
       });
       this.socket.on('wrong', function() {
