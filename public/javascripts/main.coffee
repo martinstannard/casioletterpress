@@ -27,12 +27,17 @@ class LetterPressCalculator
       @_send()
     @commandsEl.find('.delete').click =>
       @_deleteScreenText()
+    @commandsEl.find('.clear').click =>
+      @_clearScreenText()
 
   _appendScreenText: (str) ->
     @screenTextEl.text("#{@screenText()}#{str}")
 
   _deleteScreenText: ->
     @screenTextEl.text(@screenText().slice(1))
+
+  _clearScreenText: ->
+    @screenTextEl.text("")
 
   _buildLetterButtons: (letters) ->
     rowTemplate = _.template """

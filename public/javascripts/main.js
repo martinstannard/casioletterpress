@@ -40,8 +40,11 @@
       this.commandsEl.find('.send').click(function() {
         return _this._send();
       });
-      return this.commandsEl.find('.delete').click(function() {
+      this.commandsEl.find('.delete').click(function() {
         return _this._deleteScreenText();
+      });
+      return this.commandsEl.find('.clear').click(function() {
+        return _this._clearScreenText();
       });
     };
 
@@ -51,6 +54,10 @@
 
     LetterPressCalculator.prototype._deleteScreenText = function() {
       return this.screenTextEl.text(this.screenText().slice(1));
+    };
+
+    LetterPressCalculator.prototype._clearScreenText = function() {
+      return this.screenTextEl.text("");
     };
 
     LetterPressCalculator.prototype._buildLetterButtons = function(letters) {
