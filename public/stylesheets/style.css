@@ -9,11 +9,23 @@ body {
   margin-top: 40px;
 }
 
+.wrapper {
+  width: 272px;
+  margin: 0 auto;
+  position: relative;
+}
+
+aside.leaderboard {
+  width: 180px;
+  position: absolute;
+  left: -220px;
+  top: 0;
+}
+
 article {
   position: relative;
   width: 272px;
   height: 412px;
-  margin: 0 auto;
   padding: 30px 20px 40px 20px;
   background-color: #EEE;
   border: 1px solid #BBB;
@@ -130,6 +142,28 @@ article h1 span {
 
 .letters .row {
   margin-bottom: 10px;
+}
+
+ol {
+  list-style-type: none;
+  font-family: Courier;
+  font-size: 20px;
+  margin: 0
+}
+
+li {
+  height: 25px;
+  line-height: 25px;
+  padding: 0 10px;
+  text-align: right;
+}
+
+li.you {
+  background-color: #FFC926
+}
+
+li span {
+  float: left;
 }
 
 .cf:before, .cf:after {

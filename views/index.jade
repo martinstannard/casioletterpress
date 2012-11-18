@@ -1,19 +1,24 @@
 extends layout
 
 block content
+  .wrapper
+    article
+      h1 Casio
+        span  Letterpress
 
-  article
-    h1 Casio
-      span  Letterpress
+      section.screen
+        p
+        .light.correct
+        .light.wrong
+      section.buttons.commands.cf
+        div.button.clear(data-action="clear") Clear
+        div.button.delete(data-action="delete") Del
+        div.button.send(data-action="send") Send
+      section.buttons.letters
+    aside.leaderboard
+      ol
+        li 600
+        li.you <span>You</span> 500
+        li 400
+        li 200
 
-    section.screen
-      p
-      .light.correct
-      .light.wrong
-    section.buttons.commands.cf
-      div.button.clear(data-action="clear") Clear
-      div.button.delete(data-action="delete") Del
-      div.button.send(data-action="send") Send
-
-
-    section.buttons.letters
