@@ -2,6 +2,7 @@
 
 class LetterPressCalculator
   constructor: (@el, @socket) ->
+    @id = null
     @screenEl = @el.find('section.screen')
     @correctEl = @screenEl.find(".light.correct")
     @wrongEl = @screenEl.find(".light.wrong")
@@ -28,12 +29,10 @@ class LetterPressCalculator
       @_clearScreenText()
 
     @socket.on 'scoreboard', (scores) =>
-      # data is a hash of scores
-      console.log scores
+      @_updateLeaderBoard(scores)
 
     @socket.on 'youare', (id) =>
-      # data is your id
-      console.log id
+      @id = id
 
   _initLetterHandlers: ->
     @lettersEl.find(".button").click (e) =>
@@ -74,8 +73,18 @@ class LetterPressCalculator
     @correctEl.removeClass("on")
     @wrongEl.removeClass("on")
 
-  _scoreboard: ->
-
+  _updateLeaderBoard: (scores) ->
+    list = $('.leaderboard ol')
+    list.find('li').remove()
+    for playerID, score of scores
+      if @id is playerID
+        list.append """
+          <li class='you'>
+            <span>You</span> #{score}
+          </li>
+        """
+      else
+        list.append("<li>#{score}</li>")
 
   _buildLetterButtons: (letters) ->
     @lettersEl.find(".row").remove()
