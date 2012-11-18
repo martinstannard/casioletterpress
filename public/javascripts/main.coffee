@@ -20,14 +20,29 @@ class LetterPressCalculator
 
   _initLetterHandlers: ->
     @lettersEl.find(".button").click (e) =>
-      @_appendScreenText $(e.currentTarget).data("letter")
+      unless $(e.currentTarget).hasClass("on")
+        @_appendScreenText $(e.currentTarget).data("letter")
+        $(e.currentTarget).addClass("on")
 
   _initCommandHandlers: ->
     @commandsEl.find('.send').click =>
       @_send()
+    @commandsEl.find('.delete').click =>
+      @_deleteScreenText()
+    @commandsEl.find('.clear').click =>
+      @_clearScreenText()
 
   _appendScreenText: (str) ->
     @screenTextEl.text("#{@screenText()}#{str}")
+
+  _deleteScreenText: ->
+    char = @screenText().slice(-1)
+    @screenTextEl.text(@screenText().slice(0,-1))
+    @lettersEl.find(".button.on[data-letter='#{char}']").last().removeClass("on")
+
+  _clearScreenText: ->
+    @screenTextEl.text("")
+    @lettersEl.find(".button").removeClass("on")
 
   _buildLetterButtons: (letters) ->
     rowTemplate = _.template """
@@ -56,8 +71,5 @@ class LetterPressCalculator
 
 $ ->
   socket = io.connect(window.location.hostname)
-
   new LetterPressCalculator($('article'), socket)
-
-  socket.on 'letters', (data) ->
-    $('#letters').html(data.letters)
+  true
