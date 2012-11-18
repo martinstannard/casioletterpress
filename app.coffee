@@ -70,8 +70,6 @@ class Bag
 
 TheBag = new Bag
 
-debugger
-
 io.sockets.on('connection', (socket) ->
   io.sockets.emit('status', { status: status })
   io.sockets.emit('letters', { letters: TheBag.letters })
