@@ -7,8 +7,13 @@
     return $('#status').html(data.status);
   });
 
-  $('#reset').click(function() {
-    return socket.emit('reset');
+  console.log($);
+
+  $(function() {
+    return $('#reset').click(function() {
+      console.log('resetting');
+      return socket.emit('reset');
+    });
   });
 
 }).call(this);
