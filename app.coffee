@@ -114,12 +114,12 @@ class Bag
 
 
   isValidWord: (word) ->
-    return true
     return false if word.length < 3
+    console.log "isValidWord #{word}"
     new lazy(fs.createReadStream('/usr/share/dict/words'))
       .lines
       .forEach( (line) ->
-        #console.log _.trim(line)
+        console.log word, line.toString().toUpperCase()[0..-2]
         return true if word is line.toString().toUpperCase().replace(/[\n\r]/g, '')
     )
     false
