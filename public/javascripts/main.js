@@ -9,7 +9,10 @@
     function LetterPressCalculator(el, socket) {
       this.el = el;
       this.socket = socket;
-      this.screenTextEl = this.el.find('section.screen p');
+      this.screenEl = this.el.find('section.screen');
+      this.correctEl = this.screenEl.find(".light.correct");
+      this.wrongEl = this.screenEl.find(".light.wrong");
+      this.screenTextEl = this.screenEl.find('p');
       this.commandsEl = this.el.find('section.commands');
       this.lettersEl = this.el.find('section.letters');
       this._initSocketHandlers();
@@ -57,14 +60,31 @@
 
     LetterPressCalculator.prototype._deleteScreenText = function() {
       var char;
+      this._lightsOff();
       char = this.screenText().slice(-1);
       this.screenTextEl.text(this.screenText().slice(0, -1));
       return this.lettersEl.find(".button.on[data-letter='" + char + "']").last().removeClass("on");
     };
 
     LetterPressCalculator.prototype._clearScreenText = function() {
+      this._lightsOff();
       this.screenTextEl.text("");
       return this.lettersEl.find(".button").removeClass("on");
+    };
+
+    LetterPressCalculator.prototype._correctLightOn = function() {
+      this.correctEl.addClass("on");
+      return this.wrongEl.removeClass("on");
+    };
+
+    LetterPressCalculator.prototype._wrongLightOn = function() {
+      this.correctEl.removeClass("on");
+      return this.wrongEl.addClass("on");
+    };
+
+    LetterPressCalculator.prototype._lightsOff = function() {
+      this.correctEl.removeClass("on");
+      return this.wrongEl.removeClass("on");
     };
 
     LetterPressCalculator.prototype._buildLetterButtons = function(letters) {
@@ -85,6 +105,7 @@
     };
 
     LetterPressCalculator.prototype._send = function() {
+      this._lightsOff();
       if (this.screenText().length > 0) {
         return this.socket.emit('word', this.screenText());
       }
