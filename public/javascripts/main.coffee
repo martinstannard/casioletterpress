@@ -2,7 +2,10 @@
 
 class LetterPressCalculator
   constructor: (@el, @socket) ->
-    @screenTextEl = @el.find('section.screen p')
+    @screenEl = @el.find('section.screen')
+    @correctEl = @screenEl.find(".light.correct")
+    @wrongEl = @screenEl.find(".light.wrong")
+    @screenTextEl = @screenEl.find('p')
     @commandsEl = @el.find('section.commands')
     @lettersEl = @el.find('section.letters')
 
@@ -17,6 +20,10 @@ class LetterPressCalculator
     @socket.on 'letters', (data) =>
       @_buildLetterButtons(data.letters)
       @_initLetterHandlers()
+
+    @socket.on 'wrong', => @_wrongLightOn()
+
+    @socket.on 'right', => @_correctLightOn()
 
   _initLetterHandlers: ->
     @lettersEl.find(".button").click (e) =>
@@ -36,13 +43,27 @@ class LetterPressCalculator
     @screenTextEl.text("#{@screenText()}#{str}")
 
   _deleteScreenText: ->
+    @_lightsOff()
     char = @screenText().slice(-1)
     @screenTextEl.text(@screenText().slice(0,-1))
     @lettersEl.find(".button.on[data-letter='#{char}']").last().removeClass("on")
 
   _clearScreenText: ->
+    @_lightsOff()
     @screenTextEl.text("")
     @lettersEl.find(".button").removeClass("on")
+
+  _correctLightOn: ->
+    @correctEl.addClass("on")
+    @wrongEl.removeClass("on")
+
+  _wrongLightOn: ->
+    @correctEl.removeClass("on")
+    @wrongEl.addClass("on")
+
+  _lightsOff: ->
+    @correctEl.removeClass("on")
+    @wrongEl.removeClass("on")
 
   _buildLetterButtons: (letters) ->
     rowTemplate = _.template """
@@ -66,6 +87,7 @@ class LetterPressCalculator
     @lettersEl.append rowTemplate(list: letters[12..15])
 
   _send: ->
+    @_lightsOff()
     if @screenText().length > 0
       @socket.emit('word', @screenText())
 

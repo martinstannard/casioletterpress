@@ -42,9 +42,13 @@ article h1 span {
 
 .screen p {
   background-color: #DEFFD5;
+  color: #6C7869;
   height: 50px;
+  font-size: 24px;
+  line-height: 40px;
   border: 1px solid #BBB;
   margin: 0;
+  padding: 5px;
 }
 
 .screen .light {
