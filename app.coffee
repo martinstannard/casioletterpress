@@ -87,22 +87,26 @@ class Scoreboard
 class Bag
 
   constructor: ->
-    #@validWords()
     @grabLetters()
+    @getDictWords(@setDictWords)
 
   grabLetters: ->
-    bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRlRSSSTTTTUUUVWWWXYYYZ"
+    bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRRSSSTTTTUUUVWWWXYYYZ"
     @letters = _.map([0..15], ->
       bag[Math.floor(Math.random() * bag.length)]
     )
 
-  validWords: ->
-     new lazy(fs.createReadStream('/usr/share/dict/words'))
-       .lines
-       .forEach( (line) ->
-         #console.log(line.toString())
-     )
+  getDictWords: (callback) ->
+    @dict = []
+    new lazy(fs.createReadStream('/usr/share/dict/words'))
+      .lines
+      .map( (line) =>
+        line.toString().toUpperCase()[0..-1]
+    ).join(callback)
 
+  setDictWords: (dict) =>
+    @dict = dict
+    console.log "@dict size #{@dict.length}"
 
   wordIsInBag: (word) ->
     @comp = _.clone @letters
@@ -115,15 +119,9 @@ class Bag
 
   isValidWord: (word) ->
     return false if word.length < 3
-    console.log "isValidWord #{word}"
-    new lazy(fs.createReadStream('/usr/share/dict/words'))
-      .lines
-      .forEach( (line) ->
-        line = line.toString().toUpperCase()[0..-1]
-        console.log word, line
-        word is line
+    _.find(@dict, (w) ->
+      word is w
     )
-    false
 
 TheBag = new Bag
 scoreboard = new Scoreboard
@@ -140,7 +138,9 @@ io.sockets.on('connection', (socket) ->
       console.log "word not in bag"
       io.sockets.emit('wrong', { status: 'not in bag' })
       return
-    unless TheBag.isValidWord data
+    isValid = TheBag.isValidWord data
+    console.log "isValid #{isValid}"
+    unless isValid
       console.log "word not valid"
       io.sockets.emit('wrong', { status: 'not valid' })
       return
@@ -148,11 +148,11 @@ io.sockets.on('connection', (socket) ->
       console.log "word already used"
       io.sockets.emit('wrong', { status: 'word already used' })
       return
-    clients.addWord(socket.Id, data)
+    clients.addWord(socket.id, data)
     io.sockets.emit('right', { status: 'correct' })
     # update scores
     scoreboard.addScore socket.id, data.length
     console.log scoreboard
-    #io.sockets.broadcast('scoreboard', scoreboard.scores)
+    io.sockets.emit('scoreboard', scoreboard.scores)
   )
 )

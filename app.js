@@ -1,5 +1,6 @@
 (function() {
-  var Bag, Clients, Scoreboard, TheBag, app, clients, express, fs, http, io, lazy, path, routes, scoreboard, server, spell, status, user, _;
+  var Bag, Clients, Scoreboard, TheBag, app, clients, express, fs, http, io, lazy, path, routes, scoreboard, server, spell, status, user, _,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   express = require('express');
 
@@ -108,19 +109,29 @@
   Bag = (function() {
 
     function Bag() {
-      this.grabLetters();
+      this.setDictWords = __bind(this.setDictWords, this);      this.grabLetters();
+      this.getDictWords(this.setDictWords);
     }
 
     Bag.prototype.grabLetters = function() {
       var bag;
-      bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRlRSSSTTTTUUUVWWWXYYYZ";
+      bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRRSSSTTTTUUUVWWWXYYYZ";
       return this.letters = _.map([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], function() {
         return bag[Math.floor(Math.random() * bag.length)];
       });
     };
 
-    Bag.prototype.validWords = function() {
-      return new lazy(fs.createReadStream('/usr/share/dict/words')).lines.forEach(function(line) {});
+    Bag.prototype.getDictWords = function(callback) {
+      var _this = this;
+      this.dict = [];
+      return new lazy(fs.createReadStream('/usr/share/dict/words')).lines.map(function(line) {
+        return line.toString().toUpperCase().slice(0);
+      }).join(callback);
+    };
+
+    Bag.prototype.setDictWords = function(dict) {
+      this.dict = dict;
+      return console.log("@dict size " + this.dict.length);
     };
 
     Bag.prototype.wordIsInBag = function(word) {
@@ -137,13 +148,9 @@
 
     Bag.prototype.isValidWord = function(word) {
       if (word.length < 3) return false;
-      console.log("isValidWord " + word);
-      new lazy(fs.createReadStream('/usr/share/dict/words')).lines.forEach(function(line) {
-        line = line.toString().toUpperCase().slice(0);
-        console.log(word, line);
-        return word === line;
+      return _.find(this.dict, function(w) {
+        return word === w;
       });
-      return false;
     };
 
     return Bag;
@@ -164,6 +171,7 @@
       letters: TheBag.letters
     });
     return socket.on('word', function(data) {
+      var isValid;
       console.log('submitting', data);
       if (!TheBag.wordIsInBag(data)) {
         console.log("word not in bag");
@@ -172,7 +180,9 @@
         });
         return;
       }
-      if (!TheBag.isValidWord(data)) {
+      isValid = TheBag.isValidWord(data);
+      console.log("isValid " + isValid);
+      if (!isValid) {
         console.log("word not valid");
         io.sockets.emit('wrong', {
           status: 'not valid'
@@ -186,12 +196,13 @@
         });
         return;
       }
-      clients.addWord(socket.Id, data);
+      clients.addWord(socket.id, data);
       io.sockets.emit('right', {
         status: 'correct'
       });
       scoreboard.addScore(socket.id, data.length);
-      return console.log(scoreboard);
+      console.log(scoreboard);
+      return io.sockets.emit('scoreboard', scoreboard.scores);
     });
   });
 
