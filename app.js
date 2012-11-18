@@ -184,6 +184,7 @@
         letters: TheBag.letters
       });
       socket.emit('youare', socket.id);
+      socket.emit('scoreboard', scoreboard.scores);
     }
     return socket.on('word', function(data) {
       var isValid;

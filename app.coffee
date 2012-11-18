@@ -139,6 +139,7 @@ io.sockets.on('connection', (socket) ->
   unless scoreboard.exists(socket.id)
     socket.emit('letters', { letters: TheBag.letters })
     socket.emit('youare', socket.id)
+    socket.emit('scoreboard', scoreboard.scores)
   # note the use of io.sockets to emit but socket.on to listen
   socket.on('word', (data) ->
     console.log 'submitting', data
