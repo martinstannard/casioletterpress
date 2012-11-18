@@ -43,6 +43,26 @@ server.listen(app.get('port'), ->
 
 status = "All is well."
 
+class Clients
+
+  constructor: ->
+    @players = {}
+
+
+  addWord: (clientId, word) ->
+    if @player[clientId]?
+      @players[clientId].push word
+    else
+      @players[clientId] = []
+      @players[clientId].push word
+
+  playerUsedWord: (clientId, word) ->
+    return true unless @players[clientId]
+    _.find(@players[clientId], (w) ->
+      w is word
+    )
+
+
 class Scoreboard
 
   constructor: ->
@@ -79,7 +99,7 @@ class Bag
 
 
   wordIsInBag: (word) ->
-    @comp = @letters
+    @comp = _.clone @letters
     for l in word
       index = _.indexOf(@comp, l)
       return false if index is -1
@@ -88,14 +108,19 @@ class Bag
 
 
   isValidWord: (word) ->
+    return true
+    return false if word.length < 3
     new lazy(fs.createReadStream('/usr/share/dict/words'))
       .lines
       .forEach( (line) ->
-        return true if word is line
+        #console.log _.trim(line)
+        return true if word is line.toString().toUpperCase().replace(/[\n\r]/g, '')
     )
     false
 
 TheBag = new Bag
+scoreboard = new Scoreboard
+clients = new Clients
 
 io.sockets.on('connection', (socket) ->
   io.sockets.emit('status', { status: status })
@@ -112,9 +137,15 @@ io.sockets.on('connection', (socket) ->
       console.log "word not valid"
       io.sockets.emit('wrong', { status: 'not valid' })
       return
+    if clients.playerUsedWord(socket.id, data)
+      console.log "word already used"
+      io.sockets.emit('wrong', { status: 'word already used' })
+      return
+    clients.addWord(socketId, data)
     io.sockets.emit('right', { status: 'correct' })
     # update scores
-    # send score back to player
-    # broadcast scoreboard
+    scoreboard.addScore socket.id, data.length
+    console.log scoreboard
+    io.socket.broadcast('scoreboard', scoreboard.scores)
   )
 )
