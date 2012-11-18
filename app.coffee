@@ -68,6 +68,9 @@ class Clients
       w is word
     )
 
+  playerWords: (clientId) ->
+    @players[clientId].reverse()
+
 
 class Scoreboard
 
@@ -77,12 +80,14 @@ class Scoreboard
 
   addScore: (clientId, score) ->
     if @scores[clientId]?
-      @scores[clientId] += score
+      @scores[clientId] += score * 2
     else
-      @scores[clientId] = score
+      @scores[clientId] = score * 2
 
-  table: ->
-    @scores
+
+  exists: (clientId) ->
+    @scores[clientId]?
+
 
 class Bag
 
@@ -128,8 +133,9 @@ scoreboard = new Scoreboard
 clients = new Clients
 
 io.sockets.on('connection', (socket) ->
-  io.sockets.emit('status', { status: status })
-  io.sockets.emit('letters', { letters: TheBag.letters })
+  unless scoreboard.exists(socket.id)
+    io.sockets.emit('letters', { letters: TheBag.letters })
+    io.sockets.emit('youare', socket.id)
   # note the use of io.sockets to emit but socket.on to listen
   socket.on('word', (data) ->
     console.log 'submitting', data
@@ -149,7 +155,7 @@ io.sockets.on('connection', (socket) ->
       io.sockets.emit('wrong', { status: 'word already used' })
       return
     clients.addWord(socket.id, data)
-    io.sockets.emit('right', { status: 'correct' })
+    io.sockets.emit('right', { status: 'correct', words: clients.playerWords(socket.id) })
     # update scores
     scoreboard.addScore socket.id, data.length
     console.log scoreboard

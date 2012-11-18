@@ -80,6 +80,10 @@
       });
     };
 
+    Clients.prototype.playerWords = function(clientId) {
+      return this.players[clientId].reverse();
+    };
+
     return Clients;
 
   })();
@@ -92,14 +96,14 @@
 
     Scoreboard.prototype.addScore = function(clientId, score) {
       if (this.scores[clientId] != null) {
-        return this.scores[clientId] += score;
+        return this.scores[clientId] += score * 2;
       } else {
-        return this.scores[clientId] = score;
+        return this.scores[clientId] = score * 2;
       }
     };
 
-    Scoreboard.prototype.table = function() {
-      return this.scores;
+    Scoreboard.prototype.exists = function(clientId) {
+      return this.scores[clientId] != null;
     };
 
     return Scoreboard;
@@ -164,12 +168,12 @@
   clients = new Clients;
 
   io.sockets.on('connection', function(socket) {
-    io.sockets.emit('status', {
-      status: status
-    });
-    io.sockets.emit('letters', {
-      letters: TheBag.letters
-    });
+    if (!scoreboard.exists(socket.id)) {
+      io.sockets.emit('letters', {
+        letters: TheBag.letters
+      });
+      io.sockets.emit('youare', socket.id);
+    }
     return socket.on('word', function(data) {
       var isValid;
       console.log('submitting', data);
@@ -198,7 +202,8 @@
       }
       clients.addWord(socket.id, data);
       io.sockets.emit('right', {
-        status: 'correct'
+        status: 'correct',
+        words: clients.playerWords(socket.id)
       });
       scoreboard.addScore(socket.id, data.length);
       console.log(scoreboard);
