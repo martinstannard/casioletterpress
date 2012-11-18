@@ -27,6 +27,7 @@
         _this._buildLetterButtons(data.letters);
         _this._clearScreenText();
         _this._lightsOff();
+        _this._initKeyboardEvents(data.letters);
         return _this._initLetterHandlers();
       });
       this.socket.on('wrong', function() {
@@ -131,6 +132,38 @@
       return this.lettersEl.append(rowTemplate({
         list: letters.slice(12, 16)
       }));
+    };
+
+    LetterPressCalculator.prototype._initKeyboardEvents = function(letters) {
+      var letter, _fn, _i, _len, _ref,
+        _this = this;
+      _ref = _.uniq(letters);
+      _fn = function(letter) {
+        return key(letter, function() {
+          var selector;
+          selector = ".button[data-letter='" + letter + "']:not(.on):first";
+          console.log(_this.lettersEl.find(selector).get(0));
+          return _this.lettersEl.find(selector).get(0).click();
+        });
+      };
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        letter = _ref[_i];
+        _fn(letter);
+      }
+      key('enter', function() {
+        return _this.commandsEl.find('.send').click();
+      });
+      key('backspace', function() {
+        _this.commandsEl.find('.delete').click();
+        return false;
+      });
+      key('esc', function() {
+        return _this.commandsEl.find('.clear').click();
+      });
+      return key('ctrl+backspace', function() {
+        _this.commandsEl.find('.clear').click();
+        return false;
+      });
     };
 
     LetterPressCalculator.prototype._send = function() {

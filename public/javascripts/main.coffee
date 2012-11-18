@@ -22,6 +22,7 @@ class LetterPressCalculator
       @_buildLetterButtons(data.letters)
       @_clearScreenText()
       @_lightsOff()
+      @_initKeyboardEvents(data.letters)
       @_initLetterHandlers()
 
     @socket.on 'wrong', => @_wrongLightOn()
@@ -109,6 +110,23 @@ class LetterPressCalculator
     @lettersEl.append rowTemplate(list: letters[4..7])
     @lettersEl.append rowTemplate(list: letters[8..11])
     @lettersEl.append rowTemplate(list: letters[12..15])
+
+  _initKeyboardEvents: (letters) ->
+    for letter in _.uniq(letters)
+      do (letter) =>
+        key letter, =>
+          selector = ".button[data-letter='#{letter}']:not(.on):first"
+          console.log @lettersEl.find(selector).get(0)
+          @lettersEl.find(selector).get(0).click()
+
+    key 'enter', => @commandsEl.find('.send').click()
+    key 'backspace', =>
+       @commandsEl.find('.delete').click()
+       off
+    key 'esc', => @commandsEl.find('.clear').click()
+    key 'ctrl+backspace', =>
+      @commandsEl.find('.clear').click()
+      off
 
   _send: ->
     @_lightsOff()
