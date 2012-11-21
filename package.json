@@ -11,5 +11,9 @@
     "socket.io": "*",
     "underscore": "*",
     "lazy": "*"
+  },
+   "engines": {
+    "node": "0.8.x",
+    "npm":  "1.1.x"
   }
 }
