@@ -106,7 +106,7 @@ class Bag
 
   getDictWords: (callback) ->
     @dict = []
-    new lazy(fs.createReadStream('/usr/share/dict/words'))
+    new lazy(fs.createReadStream('public/words'))
       .lines
       .map( (line) =>
         line.toString().toUpperCase()[0..-1]

@@ -139,7 +139,7 @@
     Bag.prototype.getDictWords = function(callback) {
       var _this = this;
       this.dict = [];
-      return new lazy(fs.createReadStream('/usr/share/dict/words')).lines.map(function(line) {
+      return new lazy(fs.createReadStream('public/words')).lines.map(function(line) {
         return line.toString().toUpperCase().slice(0);
       }).join(callback);
     };
