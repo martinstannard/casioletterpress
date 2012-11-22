@@ -37,6 +37,9 @@ class LetterPressCalculator
     @socket.on 'youare', (id) =>
       @id = id
 
+    @socket.on 'tick', (seconds) =>
+      @_updateTimer(seconds)
+
   _initLetterHandlers: ->
     @lettersEl.find(".button").click (e) =>
       unless $(e.currentTarget).hasClass("on")
@@ -88,6 +91,9 @@ class LetterPressCalculator
         """
       else
         list.append("<li>#{score}</li>")
+
+  _updateTimer: (seconds) ->
+    $('.timer').text(seconds)
 
   _buildLetterButtons: (letters) ->
     @lettersEl.find(".row").remove()

@@ -167,10 +167,17 @@ io.sockets.on('connection', (socket) ->
   )
 )
 
+countdown = 31
+
 setInterval( =>
+  countdown -= 1
+  #send timer message
+  io.sockets.emit('tick', countdown)
+  if countdown is 0
     TheBag = new Bag
     clients.clear()
     io.sockets.emit('letters', { letters: TheBag.letters })
-, 30000)
+    countdown = 31
+, 1000)
 
 
