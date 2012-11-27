@@ -99,7 +99,7 @@ class Bag
     @getDictWords(@setDictWords)
 
   grabLetters: ->
-    bag = "AAABCDDDEEEEFGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRRSSSTTTTUUUVWWWXYYYZ"
+    bag = "AAAABBCCDDDEEEEFFGGHHIIIJKKLLLLMMMMNNNNOOOOPPPPPPQRRRRRSSSSTTTTUUUUVWWWXYYYZ"
     @letters = _.map([0..15], ->
       bag[Math.floor(Math.random() * bag.length)]
     )

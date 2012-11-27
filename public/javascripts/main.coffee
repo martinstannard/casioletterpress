@@ -24,12 +24,14 @@ class LetterPressCalculator
       @_lightsOff()
       @_initKeyboardEvents(data.letters)
       @_initLetterHandlers()
+      @_clearWords()
 
     @socket.on 'wrong', => @_wrongLightOn()
 
-    @socket.on 'right', =>
+    @socket.on 'right', (status)=>
       @_correctLightOn()
       @_clearScreenText()
+      @_updateWordList(status.words)
 
     @socket.on 'scoreboard', (scores) =>
       @_updateLeaderBoard(scores)
@@ -91,6 +93,16 @@ class LetterPressCalculator
         """
       else
         list.append("<li>#{score}</li>")
+
+  _updateWordList: (words) ->
+    @_clearWords()
+    list = $('.words ol')
+    for word in words
+      list.append("<li>#{word}</li>")
+
+  _clearWords: ->
+    list = $('.words ol')
+    list.find('li').remove()
 
   _updateTimer: (seconds) ->
     $('.timer').text(seconds)

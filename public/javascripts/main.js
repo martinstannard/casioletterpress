@@ -28,14 +28,16 @@
         _this._clearScreenText();
         _this._lightsOff();
         _this._initKeyboardEvents(data.letters);
-        return _this._initLetterHandlers();
+        _this._initLetterHandlers();
+        return _this._clearWords();
       });
       this.socket.on('wrong', function() {
         return _this._wrongLightOn();
       });
-      this.socket.on('right', function() {
+      this.socket.on('right', function(status) {
         _this._correctLightOn();
-        return _this._clearScreenText();
+        _this._clearScreenText();
+        return _this._updateWordList(status.words);
       });
       this.socket.on('scoreboard', function(scores) {
         return _this._updateLeaderBoard(scores);
@@ -117,6 +119,24 @@
         }
       }
       return _results;
+    };
+
+    LetterPressCalculator.prototype._updateWordList = function(words) {
+      var list, word, _i, _len, _results;
+      this._clearWords();
+      list = $('.words ol');
+      _results = [];
+      for (_i = 0, _len = words.length; _i < _len; _i++) {
+        word = words[_i];
+        _results.push(list.append("<li>" + word + "</li>"));
+      }
+      return _results;
+    };
+
+    LetterPressCalculator.prototype._clearWords = function() {
+      var list;
+      list = $('.words ol');
+      return list.find('li').remove();
     };
 
     LetterPressCalculator.prototype._updateTimer = function(seconds) {
