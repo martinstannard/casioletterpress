@@ -45,7 +45,7 @@
       this.socket.on('youare', function(id) {
         return _this.id = id;
       });
-      return this.socket.on('tick', function(seconds) {
+      return this.socket.on('tock', function(seconds) {
         return _this._updateTimer(seconds);
       });
     };

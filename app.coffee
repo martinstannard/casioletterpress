@@ -172,7 +172,8 @@ countdown = 31
 setInterval( =>
   countdown -= 1
   #send timer message
-  io.sockets.emit('tick', countdown)
+  console.log "sending tock #{countdown}"
+  io.sockets.emit('tock', countdown)
   if countdown is 0
     TheBag = new Bag
     clients.clear()

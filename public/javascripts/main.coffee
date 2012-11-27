@@ -39,7 +39,7 @@ class LetterPressCalculator
     @socket.on 'youare', (id) =>
       @id = id
 
-    @socket.on 'tick', (seconds) =>
+    @socket.on 'tock', (seconds) =>
       @_updateTimer(seconds)
 
   _initLetterHandlers: ->
